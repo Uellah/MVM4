@@ -13,17 +13,17 @@ class Solver:
         self.h_x = self.M.X / (self.Nx - 1)
         self.h_y = self.M.Y / (self.Ny - 1)
 
-        self.p = np.ones((self.Ny, self.Nx))
+        self.p = np.full((self.Nx, self.Ny), 1.)
 
 
     def init(self, v):
-        for j in range(self.Nx):
-            v[0, j] = self.get_grid_func(self.M.g_down, j, 0)
-            v[self.Ny - 1, j] = self.get_grid_func(self.M.g_up, j, 0)
+        for i in range(self.Nx):
+            v[i, 0] = self.get_grid_func(self.M.g_down, i, 0)
+            v[i, -1] = self.get_grid_func(self.M.g_up, i, 0)
 
-        for i in range(self.Ny):
-            v[i, 0] = self.get_grid_func(self.M.g_l, 0, i)
-            v[i, self.Nx - 1] = self.get_grid_func(self.M.g_r, 0, i)
+        for j in range(self.Ny):
+            v[0, j] = self.get_grid_func(self.M.g_l, 0, j)
+            v[-1, j] = self.get_grid_func(self.M.g_r, 0, j)
 
     def get_grid_func(self, func, i, j):
         return func(i * self.h_x, j * self.h_y)
@@ -39,16 +39,16 @@ class Solver:
         o.write_numpy_to_csv(self.p)
 
     def Dx(self, i, j, p):
-        v1_ = self.get_grid_func(self.M.v1, j, i)
+        v1_ = self.get_grid_func(self.M.v1, i, j)
         if v1_ > 0:
-            return  v1_ * (p[i, j] - p[i, j - 1]) / self.h_x
-        return v1_ * (p[i, j + 1] - p[i, j]) / self.h_x
+            return  v1_ * (p[i, j] - p[i - 1, j]) / self.h_x
+        return v1_ * (p[i + 1, j] - p[i, j]) / self.h_x
 
     def Dy(self, i, j, p):
-        v2_ = self.get_grid_func(self.M.v2, j, i)
+        v2_ = self.get_grid_func(self.M.v2, i, j)
         if v2_ > 0:
-            return v2_ * (p[i,j] - p[i - 1, j]) / self.h_x
-        return v2_ *  (p[i + 1, j] - p[i, j]) / self.h_x
+            return v2_ * (p[i, j] - p[i, j - 1]) / self.h_y
+        return v2_ *  (p[i, j + 1] - p[i, j]) / self.h_y
 
     def ax(self, i, j):
         return (self.get_grid_k1(i, j) + self.get_grid_k1(i - 1, j)) / 2.
@@ -57,37 +57,37 @@ class Solver:
         return (self.get_grid_k2(i, j) + self.get_grid_k2(i, j - 1)) / 2.
 
     def Lx(self, i, j, p):
-        return 1 / self.h_x**2 * (self.ax(i+1, j) * (p[i + 1, j] - p[i, j]) - self.ax(i, j) * (p[i, j] - p[i-1, j]))
+        return (self.ax(i + 1, j) * (p[i + 1, j] - p[i, j]) - self.ax(i, j) * (p[i, j] - p[i - 1, j])) / np.power(self.h_x, 2)
 
     def Ly(self, i, j, p):
-        return 1 / self.h_y ** 2 * (self.ay(i, j + 1) * (p[i, j + 1] - p[i, j]) - self.ay(i, j) * (p[i, j] - p[i, j - 1]))
+        return (self.ay(i, j + 1) * (p[i, j + 1] - p[i, j]) - self.ay(i, j) * (p[i, j] - p[i, j - 1])) / np.power(self.h_y, 2)
 
     def A(self, i, j, p):
         return -(self.Lx(i, j, p) + self.Ly(i, j, p)) + self.Dx(i, j, p) + self.Dy(i, j, p) - self.get_grid_func(self.M.f, i, j)
 
     def Au(self, p):
-        res = np.zeros((self.Ny, self.Nx))
-        for i in range(1, self.Ny - 1):
-            for j in range(1, self.Nx - 1):
+        res = np.zeros((self.Nx, self.Ny))
+        for i in range(1, self.Nx - 1):
+            for j in range(1, self.Ny - 1):
                 res[i, j] = self.A(i, j, p)
         return res
 
-    def dA(self, x, w, h = 0.05):
+    def dA(self, x, w, h = 1e-4):
         if np.linalg.norm(w) == 0:
             return np.zeros((self.Nx, self.Ny))
 
         if np.linalg.norm(x) == 0:
             tmp = h / np.linalg.norm(w)
-            return self.Au(tmp * w) / tmp
+            return (self.Au(tmp * w) - self.Au(self.init(np.zeros((self.Nx, self.Ny)))))  / tmp
 
         tmp = h * np.linalg.norm(x) / np.linalg.norm(w)
-        return (self.Au(x + tmp * w) - self.Au(x)) / tmp
+        return (self.Au(x + tmp * w) - self.Au(x)) * (1 / tmp)
 
 
     def sc_mult(self, u, v):
         s = 0
-        for i in range(1, self.Ny - 1):
-            for j in range(1, self.Nx - 1):
+        for i in range(1, self.Nx - 1):
+            for j in range(1, self.Ny - 1):
                 s += u[i, j] * v[i, j]
         return s
 
@@ -98,12 +98,12 @@ class Solver:
 
         nach = self.dA(self.p, res)
 
-        # r0 = b - self.dA(self.p, res)
-        r0 = np.zeros((self.Nx, self.Ny))
+        r0 = b - self.dA(self.p, res)
+        # r0 = np.zeros((self.Nx, self.Ny))
 
-        for i in range(1, self.Nx - 1):
-            for j in range(1, self.Ny - 1):
-                r0[i, j] = b[i][j] - nach[i][j]
+        # for i in range(1, self.Nx - 1):
+        #     for j in range(1, self.Ny - 1):
+        #         r0[i, j] = b[i][j] - nach[i][j]
 
         r = r0.copy()
         rho_old = alpha = omega = 1.0
@@ -163,9 +163,9 @@ class Solver:
         if not hasattr(self.M, 'u_an'):
             return -1.
         s = 0
-        for i in range(1, self.Ny - 1):
-            for j in range(1, self.Nx - 1):
-                s+=(self.p[i, j] - self.get_grid_func(self.M.u_an, j, i))**2
+        for i in range(1, self.Nx - 1):
+            for j in range(1, self.Ny - 1):
+                s+=(self.p[i, j] - self.get_grid_func(self.M.u_an, i, j))**2
         return round_to_significant_figures(np.sqrt(s), 1)
 
     def plot_heatmap(self):
@@ -173,7 +173,7 @@ class Solver:
         Построение тепловой карты для решения
         """
         plt.figure(figsize=(8, 6))
-        plt.imshow(self.p, extent=[0, self.M.X, 0, self.M.Y], origin='lower', cmap='inferno', aspect='auto')
+        plt.imshow(self.p.T, extent=[0, self.M.X, 0, self.M.Y], origin='lower', cmap='inferno', aspect='auto')
         plt.colorbar(label='Температура')
         plt.xlabel('x')
         plt.ylabel('y')

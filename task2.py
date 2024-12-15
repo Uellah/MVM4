@@ -2,15 +2,15 @@ import numpy as np
 
 TaskNumber = 2
 
-X = 0.5
-Y = 0.5
+X = 1.
+Y = 1.
 
 
 def u_an(x, y):
     return x + y
 
 def f(x, y):
-    return x + y - 2
+    return x + y
 
 # лишние переменные обьявлены для универсальности реализации получения сеточной аппроксимации
 def g_l(x, y):
@@ -32,7 +32,7 @@ def v2(x, y):
     return y
 
 def k1(x, y, u):
-    return u
+    return 1
 
 def k2(x, y, u):
-    return 1.
+    return 1

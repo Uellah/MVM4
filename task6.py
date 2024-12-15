@@ -1,18 +1,17 @@
 import numpy as np
 
-TaskNumber = 3
+TaskNumber = 6
 
 X = 0.5
 Y = 0.5
 
 
 def u_an(x, y):
-    return x + y**2
+    return np.cos(x) + np.sin(y) + 1
 
 def f(x, y):
-    return -(1-x+2*(x+2*y**2))
+    return -2 * np.cos(x) * np.sin(y) + x * np.sin(x) - y * np.cos(y)
 
-# лишние переменные обьявлены для универсальности реализации получения сеточной аппроксимации
 def g_l(x, y):
     return u_an(0, y)
 
@@ -26,10 +25,10 @@ def g_up(x, y):
     return u_an(x, Y)
 
 def v1(x, y):
-    return x
+    return -x
 
 def v2(x, y):
-    return y
+    return -y
 
 def k1(x, y, u):
     return u

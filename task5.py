@@ -1,37 +1,38 @@
 import numpy as np
 
-TaskNumber = 1
+TaskNumber = 5
 
 X = 0.5
 Y = 0.5
 
+
 def u_an(x, y):
-    return 100.
+    return x**2 + y**2
 
 def f(x, y):
-    return 0
+    return -6*(x**2+y**2)
 
 # лишние переменные обьявлены для универсальности реализации получения сеточной аппроксимации
 def g_l(x, y):
-    return 100.
+    return u_an(0, y)
 
 def g_r(x, y):
-    return 100.
+    return u_an(X, y)
 
 def g_down(x, y):
-    return 100.
+    return u_an(x, 0)
 
 def g_up(x, y):
-    return 100.
+    return u_an(x, Y)
 
 def v1(x, y):
-    return 0
+    return x
 
 def v2(x, y):
-    return 0
+    return y
 
 def k1(x, y, u):
-    return 1.
+    return u
 
 def k2(x, y, u):
-    return 1.
+    return u
