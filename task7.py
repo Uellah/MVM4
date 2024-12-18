@@ -47,21 +47,15 @@ from numpy import sin, cos, pi
 
 TaskNumber = 7
 
-X = 4*pi
-Y = 4*pi
+X = 2
+Y = 2
 
 def u_an(x, y):
     """Аналитическое решение"""
-    return cos(x) + sin(y)
+    return sin(pi*x)*sin(pi*y)
 
 def f(x, y):
-    # Пересчет правой части с учетом новых k1 и k2
-    term1 = (cos(x)+sin(y))*(sin(x)*(-2*sin(x)*x+cos(x)+sin(y))+(cos(x)+sin(y))*x*cos(x))
-    term2 = (-(cos(x)+sin(y))*(cos(y)*(2*cos(y)*y+cos(x)+sin(y))-(cos(x)+sin(y))*y*sin(y)))
-    term3 = (-y*cos(y))
-    term4 = x*sin(x)
-
-    return term1 + term2 + term3 + term4
+    return -pi**2*sin(pi*x)*sin(pi*y)*((sin(pi*y))**2*(2*(cos(pi*x))**2-(sin(pi*x))**2)+(sin(pi*x))**2*(2*(cos(pi*y))**2-(sin(pi*y))**2))
 
 def g_l(x, y):
     """Граничное условие слева"""
@@ -81,16 +75,16 @@ def g_up(x, y):
 
 def v1(x, y):
     """Скорость v1"""
-    return -x
+    return 0
 
 def v2(x, y):
     """Скорость v2"""
-    return -y
+    return 0
 
 def k1(x, y, u):
     """Коэффициент k1"""
-    return u**2 * x
+    return u**2
 
 def k2(x, y, u):
     """Коэффициент k2"""
-    return u**2 * y
+    return u**2
