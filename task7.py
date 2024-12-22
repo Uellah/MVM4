@@ -47,8 +47,8 @@ from numpy import sin, cos, pi
 
 TaskNumber = 7
 
-X = 2
-Y = 2
+X = 2.5
+Y = 2.5
 
 def u_an(x, y):
     """Аналитическое решение"""

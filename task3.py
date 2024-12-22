@@ -2,8 +2,8 @@ import numpy as np
 
 TaskNumber = 3
 
-X = 0.1
-Y = 0.1
+X = 1
+Y = 1
 
 
 def u_an(x, y):

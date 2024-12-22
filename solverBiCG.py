@@ -26,8 +26,8 @@ class Solver:
             v[-1, j] = self.get_grid_func(self.M.g_r, 0, j)
 
         tmp = (v[0][0] + v[0][-1] + v[-1][0] + v[-1][-1]) / 4
-        for i in range(self.Nx):
-            for j in range(self.Ny):
+        for i in range(1, self.Nx - 1):
+            for j in range(1, self.Ny - 1):
                 v[i][j] = tmp
 
     def get_grid_func(self, func, i, j):
@@ -83,7 +83,7 @@ class Solver:
             tmp = h * np.linalg.norm(x) / np.linalg.norm(w)
             return (self.Au(x + tmp * w) - self.Au(x)) / tmp
 
-        if np.linalg.norm(x) == 0 and np.linalg.norm(w) != 0:
+        if np.linalg.norm(x) < 1e-10 and np.linalg.norm(w) != 0:
             tmp = h / np.linalg.norm(w)
             return (self.Au(tmp * w) - self.Au(np.zeros_like(x))) / tmp
 

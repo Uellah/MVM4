@@ -35,4 +35,4 @@ def k1(x, y, u):
     return 1.
 
 def k2(x, y, u):
-    return u
+    return 1
